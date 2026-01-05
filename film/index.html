@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>2012 — Разлом</title>
+<style>
+/* === БАЗОВЫЕ СТИЛИ === */
+
+/* === РАЗЛОМЫ НА ЭКРАНЕ === */
+.crack {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 99990;
+    opacity: 0;
+    background-image: url('crack.png'); /* ← положите файл */
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    mix-blend-mode: multiply;
+    filter: brightness(0.8) contrast(1.3);
+    transition: opacity 0.3s ease;
+}
+.crack.active {
+    opacity: 0.7;
+    animation: crackSpread 0.6s forwards, shake 0.1s 0.5s infinite;
+}
+@keyframes crackSpread {
+    0% { opacity: 0; filter: brightness(0.5) blur(4px); }
+    70% { opacity: 0.6; filter: brightness(0.7); }
+    100% { opacity: 0.7; filter: brightness(0.8); }
+}
+
+
+
+/* === БЕЛАЯ ВСПЫШКА С ТЕКСТОМ === */
+.sudden-flash {
+    position: fixed;
+    inset: 0;
+    background: #ffffff; /* БЕЛЫЙ фон */
+    color: #000000; /* Чёрный текст */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Courier New", monospace;
+    font-size: 72px;
+    font-weight: bold;
+    letter-spacing: 5px;
+    z-index: 99998;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.08s linear;
+}
+.sudden-flash.show {
+    opacity: 1;
+}
+.sudden-flash .text {
+    text-align: center;
+    color: #8b0000; /* Тёмно-красный — читаемо на белом */
+    text-shadow: 
+        0 0 15px rgba(255, 0, 0, 0.5),
+        0 0 30px rgba(255, 0, 0, 0.3);
+    animation: flickerTextWhite 0.12s infinite alternate;
+}
+@keyframes flickerTextWhite {
+    0%   { filter: none; }
+    50%  { filter: contrast(1.4) brightness(0.95); }
+    100% { filter: drop-shadow(0 0 8px #ff0000); }
+}
+
+
+
+
+/* === ВСПЫШКИ С НАДПИСЯМИ === */
+.flash-message {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    color: #ff0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Courier New", monospace;
+    font-size: 72px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    z-index: 80000;
+    opacity: 0;
+    pointer-events: none;
+    flex-direction: column;
+}
+.flash-message.show {
+    opacity: 1;
+    animation: flashIn 0.3s forwards, flashOut 0.3s 0.7s forwards;
+}
+@keyframes flashIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1.05); }
+}
+@keyframes flashOut {
+    from { opacity: 1; }
+    to { opacity: 0; filter: blur(4px); }
+}
+
+
+/* === ЗАМЕНА КУРСОРА === */
+body {
+  cursor: url('cursor.png'), auto;
+}
+
+
+body {
+    margin: 0;
+    background: #000;
+    color: #cfcfcf;
+    font-family: "Courier New", monospace;
+    line-height: 1.6;
+    overflow-x: hidden;
+    font-weight: bold;
+}
+
+/* --- курсор --- */
+.cursor-glitch { cursor: none !important; }
+.fake-cursor {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    z-index: 40000;
+    mix-blend-mode: difference;
+    border: 2px solid #ff3b3b;
+    border-radius: 3px;
+    transform: translate(-50%, -50%);
+    transition: transform 60ms linear;
+    box-shadow: 0 0 18px rgba(255,59,59,0.6);
+    opacity: 0.95;
+}
+
+/* --- вспышки --- */
+.flash-effect {
+    position: fixed;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 99997;
+    transition: opacity 0.15s linear;
+}
+
+.flash {
+    position: fixed;
+    inset: 0;
+    background: white;
+    z-index: 20000;
+    opacity: 0;
+    pointer-events: none;
+}
+.flash.active {
+    animation: flashBlink 0.15s infinite;
+}
+@keyframes flashBlink {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* --- скримеры в углах --- */
+.scare-corner {
+    position: fixed;
+    width: 180px;
+    height: 140px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 49999;
+    border: 2px solid #ff3b3b;
+    box-shadow: 0 0 20px rgba(255,59,59,0.8);
+    border-radius: 4px;
+    filter: contrast(1.3) brightness(0.9);
+}
+
+.scare-corner.show {
+    opacity: 0.9;
+    animation: scareFadeIn 0.2s forwards, scareShake 0.15s infinite;
+}
+@keyframes scareFadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 0.9; transform: scale(1); }
+}
+@keyframes scareShake {
+    0% { transform: translate(0,0) rotate(-1deg); }
+    50% { transform: translate(2px,-2px) rotate(1deg); }
+    100% { transform: translate(0,0) rotate(-1deg); }
+}
+
+/* --- искажённый текст --- */
+.corrupt-text {
+    font-family: "Courier New", monospace;
+    font-size: 22px;
+    line-height: 1.45;
+    letter-spacing: 2px;
+    color: #bfbfbf;
+    margin: 20px 0 25px;
+    opacity: 0.9;
+    white-space: pre-wrap;
+    font-weight: bold;
+    animation: corruptFlicker 0.15s infinite;
+}
+.corrupt-text .hint {
+    color: #ff3b3b;
+    font-weight: bold;
+}
+@keyframes corruptFlicker {
+    0%   { filter: grayscale(0); }
+    50%  { filter: grayscale(1) invert(1); }
+    100% { filter: grayscale(0); }
+}
+
+/* --- баг в конце --- */
+.glitch-end {
+    font-family: monospace;
+    font-size: 20px;
+    color: #ff3b3b;
+    white-space: pre;
+    margin: 20px 0;
+    padding: 10px;
+    background: rgba(0,0,0,0.7);
+    border-left: 3px solid #ff3b3b;
+    overflow: hidden;
+    animation: flicker 0.1s infinite;
+}
+
+/* --- анимации --- */
+@keyframes shake {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(5px,-5px); }
+    50% { transform: translate(-5px,5px); }
+    75% { transform: translate(5px,5px); }
+    100% { transform: translate(0,0); }
+}
+
+@keyframes flicker {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+@keyframes wordFlicker {
+    0%   { filter: grayscale(0) invert(0); }
+    50%  { filter: grayscale(1) invert(1); }
+    100% { filter: grayscale(0) invert(0); }
+}
+
+/* --- экраны --- */
+.screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+}
+.box {
+    border: 1px solid #ff3b3b;
+    padding: 40px 50px;
+    text-align: center;
+    color: #ff3b3b;
+    font-weight: bold;
+}
+input, button {
+    margin-top: 15px;
+    background: #000;
+    border: 1px solid #ff3b3b;
+    color: #ff3b3b;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-weight: bold;
+}
+button:hover {
+    background: #ff3b3b;
+    color: #000;
+}
+
+/* --- контент --- */
+#content {
+    display: none;
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 20px;
+    animation: fadeIn 3s forwards;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes appear {
+    to { opacity: 1; }
+}
+.section {
+    margin-top: 40px;
+    opacity: 0;
+    animation: appear 2s forwards;
+}
+.section:nth-child(2) { animation-delay: 1s; }
+.section:nth-child(3) { animation-delay: 2s; }
+.section:nth-child(4) { animation-delay: 3s; }
+.section:nth-child(5) { animation-delay: 4s; }
+.section:nth-child(6) { animation-delay: 5s; }
+.section:nth-child(7) { animation-delay: 6s; }
+
+h1, h2 {
+    color: #ff3b3b;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+.divider {
+    margin: 40px 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #ff3b3b, transparent);
+}
+
+/* --- кровь --- */
+.blood {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    pointer-events: none;
+    z-index: 9999;
+    background-image: url("blood.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.9;
+    filter: brightness(0.65) contrast(1.4);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 55%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 85%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 55%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 85%, rgba(0,0,0,0) 100%);
+    animation: bloodFlow 26s linear infinite;
+}
+.blood.left { left: 0; }
+.blood.right { right: 0; transform: scaleX(-1); }
+@keyframes bloodFlow {
+    0% { background-position: center top; }
+    100% { background-position: center bottom; }
+}
+
+/* --- визуалы --- */
+#visions {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+}
+.vision {
+    position: absolute;
+    max-width: 40vw;
+    max-height: 40vh;
+    opacity: 0;
+    filter: contrast(1.5) brightness(0.8);
+    animation: none;
+}
+@keyframes visionIn {
+    0% { opacity: 0; transform: scale(0.8) rotate(-2deg); }
+    20% { opacity: 1; transform: scale(1.05) rotate(1deg); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.15) rotate(-1deg); }
+}
+
+/* --- модальные окна --- */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+.modal {
+    border: 1px solid #ff3b3b;
+    padding: 40px 50px;
+    text-align: center;
+    animation: flicker 0.15s infinite;
+}
+.modal p {
+    margin-bottom: 25px;
+    font-size: 18px;
+    letter-spacing: 2px;
+}
+
+/* --- фразы --- */
+.word-flash {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 72px;
+    font-weight: bold;
+    letter-spacing: 6px;
+    color: #fff;
+    background: rgba(0,0,0,0.85);
+    z-index: 30000;
+    animation: wordFlicker 0.12s infinite;
+    pointer-events: none;
+}
+
+/* --- фильтр страха --- */
+.bw-flash {
+    filter: grayscale(1) contrast(1.8) brightness(0.9);
+}
+body.bw-flash {
+    animation: bwScreen 0.12s infinite;
+}
+@keyframes bwScreen {
+    0% { filter: grayscale(0); }
+    50% { filter: grayscale(1); }
+    100% { filter: grayscale(0); }
+}
+
+/* --- глаз --- */
+.eye-watch {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-image: url("eye.png");
+    background-size: cover;
+    opacity: 0;
+    z-index: 99996;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+.eye-watch.show { opacity: 1; }
+
+/* === ВИДЕО СЛЕДИТ === */
+.video-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 60000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.video-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.video-overlay video {
+    max-width: 80%;
+    max-height: 80%;
+    border: 2px solid #ff3b3b;
+    box-shadow: 0 0 30px rgba(255,59,59,0.8);
+    border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- Анимированный глаз -->
+<div class="eye-watch" id="eyeWatch"></div>
+
+<!-- Эффекты -->
+<div class="flash-effect" id="flashEffect"></div>
+<div class="flash" id="flash"></div>
+
+<!-- Скримеры в углах -->
+<div class="scare-corner" id="scare1"></div>
+<div class="scare-corner" id="scare2"></div>
+<div class="scare-corner" id="scare3"></div>
+
+<!-- Видео "следит" -->
+<div class="video-overlay" id="videoOverlay">
+    <video id="sleditVideo" src="sledit.mp4" muted></video>
+</div>
+
+<!-- Визуалы -->
+<div id="visions">
+    <img src="eye.png" class="vision">
+    <img src="eyes.png" class="vision">
+    <img src="scary-man.png" class="vision">
+</div>
+
+<!-- Модальные окна -->
+<div class="overlay" id="overlay" style="display:none;">
+    <div class="modal" id="modal1">
+        <p>Хотите ли вы знать больше?</p>
+        <button onclick="nextModal(2)">ДА</button>
+        <button onclick="closeAll()">НЕТ</button>
+    </div>
+    <div class="modal" id="modal2" style="display:none;">
+        <p>Вы уверены?</p>
+        <button onclick="nextModal(3)">ДА</button>
+    </div>
+    <div class="modal" id="modal3" style="display:none;">
+        <p>Назад пути нет.</p>
+        <button onclick="finalStep()">ПРОДОЛЖИТЬ</button>
+    </div>
+</div>
+
+<!-- Кровь -->
+<div class="blood left"></div>
+<div class="blood right"></div>
+
+<!-- Экраны ввода -->
+<div class="screen" id="timeScreen">
+    <div class="box">
+        <p>Введите время</p>
+        <input id="timeInput" placeholder="--:--">
+        <br>
+        <button id="timeBtn">ПРОДОЛЖИТЬ</button>
+    </div>
+</div>
+
+<div class="screen" id="nameScreen" style="display:none;">
+    <div class="box">
+        <p>Введите имя</p>
+        <input id="nameInput" placeholder="Имя">
+        <br>
+        <button id="nameBtn">ВОЙТИ</button>
+    </div>
+</div>
+
+<!-- Основной контент -->
+<div id="content">
+    <h1 id="welcome"></h1>
+    <div class="divider"></div>
+
+    <div class="section">
+        <h2>2012</h2>
+        <div class="corrupt-text" id="corrupt2012"></div>
+        <p>В этом году мир не закончился. Он <em>сломался</em>.</p>
+    </div>
+
+    <div class="section">
+        <h2>Разлом</h2>
+        <p>В 03:47:21 по московскому времени сработали все часы. Все. Даже те, что стояли. В этот момент часть людей перестала существовать. Другие забыли. Оставшиеся — <em>почувствовали</em>.</p>
+        <p>Назовите это как угодно: аномалия, сбой, разлом. Но это было <strong>реально</strong>.</p>
+    </div>
+
+    <div class="section">
+        <h2>Хронология событий</h2>
+        <p><strong>3 декабря 2012</strong> — 03:47:21: Сбой времени. 14 000 человек исчезают из баз данных. Ни следа.</p>
+        <p><strong>4 декабря</strong> — 03:47:21: Повтор. Уцелевшие слышат шёпот. "Ты уже был здесь".</p>
+        <p><strong>5 декабря</strong> — 03:47:21: Первые записи с "вторыми лицами". Люди видят себя в толпе. Это не они.</p>
+        <p><strong>6 декабря</strong> — 03:47:21: Связь обрывается. В эфире — шум. Потом тишина. На 11 секунд.</p>
+    </div>
+
+    <div class="section">
+        <h2>Свидетели</h2>
+        <p><strong>Катя, 28 лет</strong>: "Я смотрела в зеркало. Моё отражение улыбнулось. Я — нет."</p>
+        <p><strong>Алексей, бывший инженер</strong>: "Я включил запись. На ней — я. Но я не помню, как говорил эти слова. 'Ты должен вернуться'."</p>
+        <p><strong>Аноним, 2023</strong>: "Я проснулся в 03:47. На стене — надпись: 'Ты уже был здесь. Вернись'."</p>
+    </div>
+
+    <div class="section">
+        <h2>Артефакты</h2>
+        <p><strong>Запись с камеры 34-B</strong>: На кадрах — пустая комната. В 03:47:21 появляется человек в чёрном. Он смотрит в камеру. Через 7 секунд — исчезает. Лицо — пустота.</p>
+        <p><strong>Дневник №12</strong>: "Он приходит через экраны. Слово 'разлом' — ключ. Но он уже внутри."</p>
+        <p><strong>Фото 114</strong>: Группа людей. Один из них — без лица. На обороте: "Он не должен был быть на фото".</p>
+    </div>
+
+    <div class="section">
+        <h2>Теории</h2>
+        <p><strong>Петля времени</strong>: Мы не живём. Мы повторяем один момент. 03:47 — точка сброса.</p>
+        <p><strong>Второй слой реальности</strong>: Мы — тени. Они — те, кто наблюдает. Они всегда были здесь.</p>
+        <p><strong>Разум как антенна</strong>: Только те, кто "слышит", помнят. Остальные — марионетки.</p>
+        <p><strong>Он — это ты</strong>: Ты не возвращаешься. Ты — часть петли. Ты — <em>наблюдатель</em>.</p>
+
+        <!-- Баг в конце -->
+        <div class="glitch-end" id="glitchEnd">
+userdata.name="????"
+userdata.time="CORRUPTED"
+status: IN_LOOP
+entry_count: 12
+last_seen: 03:47:21
+warning: DO_NOT_RETURN
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Наблюдение</h2>
+        <p>Система фиксирует возвращения.<br>
+        Имя и время сохранены.<br>
+        Это не первый вход.</p>
+        <p>Ты уже был здесь, ${userName}.<br>
+        Ты уже читал это.<br>
+        Но ты вернулся.</p>
+    </div>
+</div>
+
+<!-- === КРОВАВЫЙ ТАЙМЕР === -->
+<div id="bloodyTimer" style="
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 36px;
+  font-weight: bold;
+  color: #ff0000;
+  text-shadow: 
+    0 0 10px #ff0000,
+    0 0 20px rgba(255,0,0,0.6),
+    0 0 30px rgba(255,0,0,0.4);
+  background: rgba(0,0,0,0.7);
+  padding: 15px 25px;
+  border: 2px solid #ff3b3b;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(255,59,59,0.6);
+  z-index: 99995;
+  opacity: 0;
+  transition: opacity 0.5s;
+">
+  ОСТАЛОСЬ: <span id="timerDisplay">01:30</span>
+</div>
+
+<div class="crack" id="crackEffect"></div>
+
+
+<!-- === ВСПЫШКИ С НАДПИСЯМИ === -->
+<div class="flash-message" id="flashMessage"></div>
+
+<div class="sudden-flash" id="suddenFlash">
+    <div class="text"></div>
+</div>
+<script>
+// ==== ПОЛНЫЙ СКРИПТ — ИСПРАВЛЕННЫЙ (таймер появится!) ====
+
+let userName = "", userTime = "";
+let fearLevel = 0;
+let audioCtx, masterGain, analyser;
+let whisperAudioElem, whisperSource, whisperGain, whisperPanner;
+let melodyAudio, glitchSound, tickAudio, chaosAudio, screamAudio;
+
+// Убираем получение элементов здесь!
+// let bloodyTimer, timerDisplay — объявим позже
+
+const scareImages = [
+    'scary1.jpg', 'scary2.jpg', 'scary3.jpg',
+    'scary4.jpg', 'scary5.jpg', 'scary6.jpg',
+    'scary7.jpg', 'scary8.jpg'
+];
+
+const corruptChars = "█▓▒░#@$%&?/\\|<>[]{}01";
+const letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЫЭЮЯ";
+
+const hiddenMessages = [
+    "ТЫ УЖЕ БЫЛ ЗДЕСЬ",
+    "НЕ ОГЛЯДЫВАЙСЯ",
+    "ВРЕМЯ НЕ СУЩЕСТВУЕТ",
+    "ЭТО НЕ ПЕРВЫЙ ВХОД",
+    "ОН ЗА СПИНОЙ",
+    "ТЫ НЕ ВЫБЕРЁШЬСЯ",
+    "СМОТРИ",
+    "ОН ВИДИТ ТЕБЯ"
+];
+
+function preloadSounds() {
+    whisperAudioElem = new Audio("strashnyi-shepot.mp3");
+    whisperAudioElem.loop = true;
+    whisperAudioElem.volume = 0.08;
+
+    melodyAudio = new Audio("melody.mp3");
+    melodyAudio.loop = true;
+    melodyAudio.volume = 0.1;
+
+    tickAudio = new Audio("tick.mp3");
+    tickAudio.loop = true;
+    tickAudio.volume = 0.1;
+
+    glitchSound = new Audio("glitch.mp3");
+    glitchSound.volume = 0.5;
+
+    chaosAudio = new Audio("af6738ba210e593.mp3");
+    chaosAudio.volume = 1.0;
+
+    screamAudio = new Audio("scream.mp3");
+    screamAudio.volume = 0.8;
+
+    document.addEventListener("click", unlockAudio, { once: true });
+}
+
+function unlockAudio() {
+    if (audioCtx) audioCtx.resume();
+    whisperAudioElem.play().catch(() => {});
+    melodyAudio.play().catch(() => {});
+    tickAudio.play().catch(() => {});
+    initAudio();
+}
+
+function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    connectWhisper();
+}
+
+function connectWhisper() {
+    if (!audioCtx || whisperSource) return;
+    whisperSource = audioCtx.createMediaElementSource(whisperAudioElem);
+    whisperPanner = audioCtx.createStereoPanner();
+    whisperGain = audioCtx.createGain();
+    whisperGain.gain.value = 0.06;
+    whisperSource.connect(whisperPanner).connect(whisperGain).connect(masterGain);
+}
+
+function flashScreen() {
+    const flash = document.getElementById("flashEffect");
+    if (flash) {
+        flash.style.opacity = 0.5 + fearLevel * 0.005;
+        setTimeout(() => { flash.style.opacity = 0; }, 50 + fearLevel);
+    }
+}
+
+function screenShake() {
+    document.body.style.animation = `shake 0.1s infinite`;
+    setTimeout(() => { document.body.style.animation = ""; }, 100 + fearLevel);
+}
+
+function playGlitchBurst() {
+    if (glitchSound) {
+        glitchSound.currentTime = 0;
+        glitchSound.play().catch(() => {});
+    }
+    flashScreen();
+    screenShake();
+    document.body.classList.add("bw-flash");
+    setTimeout(() => document.body.classList.remove("bw-flash"), 80 + fearLevel);
+}
+
+function showFullscreenScare() {
+    const scare = document.createElement("div");
+    scare.style.position = "fixed";
+    scare.style.top = "0";
+    scare.style.left = "0";
+    scare.style.width = "100vw";
+    scare.style.height = "100vh";
+    scare.style.zIndex = "999999";
+    scare.style.pointerEvents = "none";
+    scare.style.backgroundImage = `url('${scareImages[Math.floor(Math.random() * scareImages.length)]}')`;
+    scare.style.backgroundSize = "cover";
+    scare.style.backgroundPosition = "center";
+    scare.style.backgroundRepeat = "no-repeat";
+    scare.style.filter = "contrast(1.4) brightness(0.8) saturate(1.2)";
+    scare.style.border = "3px solid #ff3b3b";
+    scare.style.boxShadow = "0 0 40px rgba(255,59,59,0.8)";
+    scare.style.opacity = "0";
+    scare.style.transition = "opacity 0.1s";
+
+    document.body.appendChild(scare);
+
+    setTimeout(() => { scare.style.opacity = "1"; }, 10);
+    playGlitchBurst();
+
+    setTimeout(() => {
+        scare.style.opacity = "0";
+        setTimeout(() => {
+            if (scare && scare.parentNode) scare.remove();
+        }, 300);
+    }, 300 + Math.random() * 300);
+}
+
+function flashSuddenMessage() {
+    const messages = [
+        "МЫ ТЕБЯ ВИДИМ",
+        "ОН СМОТРИТ ЧЕРЕЗ ЭКРАН",
+        "ТЫ НЕ ВЫЙДЕШЬ ЖИВЫМ",
+        "ЗАКРОЙ ГЛАЗА",
+        "ТЫ УМРЁШЬ В 03:47",
+        "ТЫ НЕ ПЕРВЫЙ"
+    ];
+
+    const suddenFlash = document.getElementById("suddenFlash");
+    const text = suddenFlash.querySelector(".text");
+    const msg = messages[Math.floor(Math.random() * messages.length)];
+
+    text.innerHTML = '';
+    for (let char of msg) {
+        const span = document.createElement('span');
+        span.innerText = char;
+        if (Math.random() < 0.3) {
+            span.style.position = 'relative';
+            span.style.top = (Math.random() > 0.5 ? '-' : '') + Math.random() * 15 + 'px';
+            span.style.left = (Math.random() > 0.5 ? '-' : '') + Math.random() * 10 + 'px';
+            span.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+            span.style.display = 'inline-block';
+        }
+        text.appendChild(span);
+    }
+
+    suddenFlash.classList.add("show");
+    playGlitchBurst();
+    screenShake();
+
+    setTimeout(() => {
+        suddenFlash.classList.remove("show");
+    }, 500);
+}
+
+function playCrack() {
+    const crackEffect = document.getElementById("crackEffect");
+    crackEffect.classList.remove("active");
+    void crackEffect.offsetWidth;
+    crackEffect.classList.add("active");
+
+    const crackSound = new Audio("crack.mp3");
+    crackSound.volume = 0.6;
+    crackSound.play().catch(() => {});
+
+    playGlitchBurst();
+
+    setTimeout(() => {
+        crackEffect.classList.remove("active");
+    }, 1500);
+}
+
+function playSleditVideo() {
+    const videoOverlay = document.getElementById("videoOverlay");
+    const sleditVideo = document.getElementById("sleditVideo");
+
+    if (Math.random() > 0.4 + fearLevel * 0.006) return;
+    videoOverlay.classList.add("show");
+    sleditVideo.currentTime = 0;
+    sleditVideo.play().catch(() => {});
+    playGlitchBurst();
+    setTimeout(() => { videoOverlay.classList.remove("show"); }, 3000);
+}
+
+function generateCorruptText() {
+    let result = "";
+    for (let i = 0; i < 4; i++) {
+        let line = "";
+        const freq = 0.02 + fearLevel * 0.001;
+        for (let j = 0; j < 42; j++) {
+            if (Math.random() < freq) {
+                line += letters[Math.floor(Math.random() * letters.length)];
+            } else {
+                line += corruptChars[Math.floor(Math.random() * corruptChars.length)];
+            }
+        }
+        result += line + "\n";
+    }
+    return result;
+}
+
+function increaseHostility() {
+    fearLevel = Math.min(100, fearLevel + 5);
+
+    if (melodyAudio) melodyAudio.volume = 0.1 + (fearLevel / 100) * 0.3;
+    if (tickAudio) tickAudio.volume = 0.1 + (fearLevel / 100) * 0.2;
+
+    clearInterval(window.fullScareInterval);
+    window.fullScareInterval = setInterval(showFullscreenScare, 12000 - fearLevel * 100);
+
+    clearInterval(window.flashInterval);
+    window.flashInterval = setInterval(flashSuddenMessage, 15000 - fearLevel * 120);
+
+    clearInterval(window.crackInterval);
+    window.crackInterval = setInterval(playCrack, 25000 - fearLevel * 150);
+
+    clearInterval(window.videoInterval);
+    window.videoInterval = setInterval(playSleditVideo, 50000 - fearLevel * 250);
+
+    clearInterval(window.corruptInterval);
+    window.corruptInterval = setInterval(() => {
+        const corruptBlock = document.getElementById("corrupt2012");
+        if (corruptBlock) {
+            corruptBlock.innerText = generateCorruptText();
+        }
+    }, 2500 - fearLevel * 10);
+}
+
+// ✅ startBloodyTimer() — получаем элементы ТОЛЬКО КОГДА НУЖНО
+function startBloodyTimer() {
+    const bloodyTimer = document.getElementById("bloodyTimer");
+    const timerDisplay = document.getElementById("timerDisplay");
+
+    if (!bloodyTimer || !timerDisplay) {
+        console.error("Таймер не найден!");
+        return;
+    }
+
+    let timeLeft = 90;
+    bloodyTimer.style.opacity = 1;
+
+    const timer = setInterval(() => {
+        const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+        const seconds = String(timeLeft % 60).padStart(2, '0');
+        timerDisplay.innerText = `${minutes}:${seconds}`;
+
+        if (timeLeft <= 10) {
+            timerDisplay.style.color = "#ff0000";
+            timerDisplay.style.textShadow = "0 0 10px #ff0000, 0 0 20px red";
+            timerDisplay.style.animation = "flicker 0.1s infinite";
+            playGlitchBurst();
+            if (timeLeft % 2 === 0) screenShake();
+        }
+
+        timeLeft--;
+
+        if (timeLeft < 0) {
+            clearInterval(timer);
+            bloodyTimer.style.opacity = 0;
+            stopAllAudio();
+            setTimeout(askTruth, 1000);
+        }
+    }, 1000);
+}
+
+function stopAllAudio() {
+    if (whisperAudioElem) whisperAudioElem.pause();
+    if (melodyAudio) melodyAudio.pause();
+    if (tickAudio) tickAudio.pause();
+}
+
+function askTruth() {
+    playGlitchBurst();
+    screenShake();
+
+    const truthModal = document.createElement("div");
+    truthModal.id = "truthModal";
+    truthModal.style = `
+        position: fixed; inset: 0; background: #000; display: flex;
+        align-items: center; justify-content: center; z-index: 100000;
+        color: #ff3b3b; font-family: "Courier New", monospace;
+        font-size: 56px; font-weight: bold; text-align: center;
+        letter-spacing: 5px; opacity: 0; animation: appear 1s forwards;
+    `;
+    truthModal.innerHTML = `
+        <div>
+            <p style="margin-bottom: 40px;">ХОТИТЕ УЗНАТЬ ВСЮ ПРАВДУ?</p>
+            <div>
+                <button onclick="askSure()" style="
+                    margin: 0 30px; padding: 20px 50px; font-size: 32px;
+                    background: #000; border: 2px solid #ff3b3b; color: #ff3b3b;
+                ">ДА</button>
+                <button onclick="closeSite()" style="
+                    margin: 0 30px; padding: 20px 50px; font-size: 32px;
+                    background: #000; border: 2px solid #ff3b3b; color: #ff3b3b;
+                ">НЕТ</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(truthModal);
+}
+
+// ... остальные функции (askSure, confirmFinal, startChaos) — оставьте как есть ...
+
+// ✅ Остальные функции без изменений
+function askSure() {
+    const modal = document.getElementById("truthModal");
+    if (modal) modal.remove();
+    playGlitchBurst();
+
+    const sureModal = document.createElement("div");
+    sureModal.style = `
+        position: fixed; inset: 0; background: #000; display: flex;
+        align-items: center; justify-content: center; z-index: 100000;
+        color: #ff3b3b; font-size: 56px; font-family: "Courier New", monospace;
+        font-weight: bold; text-align: center; opacity: 0; animation: appear 1s forwards;
+    `;
+    sureModal.innerHTML = `
+        <div>
+            <p style="margin-bottom: 40px;">ВЫ УВЕРЕНЫ?</p>
+            <div>
+                <button onclick="confirmFinal()" style="
+                    margin: 0 30px; padding: 20px 50px; font-size: 32px;
+                    background: #000; border: 2px solid #ff3b3b; color: #ff3b3b;
+                ">ДА</button>
+                <button onclick="closeSite()" style="
+                    margin: 0 30px; padding: 20px 50px; font-size: 32px;
+                    background: #000; border: 2px solid #ff3b3b; color: #ff3b3b;
+                ">НЕТ</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(sureModal);
+}
+
+function confirmFinal() {
+    const modal = document.getElementById("truthModal") || document.querySelector(".final-modal");
+    if (modal) modal.remove();
+
+    playGlitchBurst();
+
+    const noReturn = document.createElement("div");
+    noReturn.id = "noReturn";
+    noReturn.style = `
+        position: fixed; inset: 0; background: #000; color: #ff0000;
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; z-index: 100000; font-family: "Courier New";
+        font-size: 72px; font-weight: bold; letter-spacing: 8px;
+        opacity: 0; animation: appear 1s forwards;
+    `;
+    noReturn.innerHTML = `
+        <div>НАЗАД ПУТИ НЕТ</div>
+        <div style="font-size: 32px; margin-top: 20px; animation: flicker 0.3s infinite;">⚠️</div>
+    `;
+    document.body.appendChild(noReturn);
+
+    setTimeout(() => {
+        noReturn.remove();
+        startChaos();
+    }, 2500);
+}
+
+function startChaos() {
+    const errors = [
+        "SYSTEM FAILED",
+        "REALITY BREACH",
+        "ENTITY IN PROXIMITY",
+        "ACCESS DENIED",
+        "RETURN PROHIBITED"
+    ];
+
+    let index = 0;
+
+    const showNextError = () => {
+        if (index >= errors.length) {
+            showBSOD();
+            return;
+        }
+
+        const div = document.createElement("div");
+        div.style = `
+            position: fixed; inset: 0; background: #000; color: #ff0000;
+            display: flex; align-items: center; justify-content: center;
+            font-family: "Courier New"; font-size: 64px; font-weight: bold;
+            z-index: 100000; opacity: 0;
+        `;
+        div.innerText = errors[index];
+        document.body.appendChild(div);
+
+        setTimeout(() => { div.style.opacity = 1; }, 50);
+        playGlitchBurst();
+        screenShake();
+
+        setTimeout(() => {
+            div.style.opacity = 0;
+            setTimeout(() => { div.remove(); }, 300);
+            index++;
+            setTimeout(showNextError, 300 + Math.random() * 300);
+        }, 600 + Math.random() * 200);
+    };
+
+    function showBSOD() {
+        const bsod = document.createElement("div");
+        bsod.id = "bsodScreen";
+        bsod.style = `
+            position: fixed; inset: 0; background: #000080; color: #fff;
+            font-family: "Consolas", "Courier New"; font-size: 24px;
+            padding: 100px 60px; z-index: 100000;
+        `;
+        bsod.innerHTML = `
+            <h1 style="color:#fff;font-size:60px;margin-bottom:30px;">:(</h1>
+            <p>К сожалению, ваше устройство столкнулось с проблемой и необходимо перезагрузиться.</p>
+            <p>Мы собираем информацию об ошибке, а затем выполним перезагрузку.</p>
+            <pre style="color:#cfcfcf;line-height:1.4;">
+Ошибка: 0x0000007F
+CRITICAL_PROCESS_DIED
+Разрыв реальности
+Сущность приближается
+Вы уже были здесь
+            </pre>
+            <p>Не выключайте питание.</p>
+        `;
+        document.body.appendChild(bsod);
+
+        screenShake();
+        setInterval(playGlitchBurst, 200);
+
+        setTimeout(() => {
+            try {
+                window.open('', '_self', '').close();
+                window.close();
+            } catch (e) {
+                alert("Система не отвечает. Вас больше нет.");
+            }
+        }, 7000);
+    }
+
+    chaosAudio.play().catch(() => {});
+    setInterval(() => {
+        screamAudio.currentTime = 0;
+        screamAudio.play().catch(() => {});
+    }, 900);
+
+    showNextError();
+}
+
+// ✅ Получаем элементы в нужный момент
+document.getElementById("timeBtn").addEventListener("click", () => {
+    userTime = document.getElementById("timeInput").value || "НЕИЗВЕСТНО";
+    document.getElementById("timeScreen").style.display = "none";
+    document.getElementById("nameScreen").style.display = "flex";
+    preloadSounds();
+});
+
+document.getElementById("nameBtn").addEventListener("click", () => {
+    userName = document.getElementById("nameInput").value || "СУБЪЕКТ";
+    document.getElementById("nameScreen").style.display = "none";
+    document.getElementById("content").style.display = "block";
+
+    const welcome = document.getElementById("welcome");
+    welcome.innerHTML = `${userName}, в ${userTime} всё началось.`;
+
+    document.body.innerHTML = document.body.innerHTML.replace(/\${userName}/g, userName);
+
+    startBloodyTimer();
+    startFlashWarnings();
+    increaseHostility();
+    setInterval(increaseHostility, 10000);
+
+    const corruptBlock = document.getElementById("corrupt2012");
+    if (corruptBlock) {
+        corruptBlock.innerText = generateCorruptText();
+        setInterval(() => {
+            if (Math.random() > 0.92) {
+                const msg = hiddenMessages[Math.floor(Math.random() * hiddenMessages.length)];
+                corruptBlock.innerHTML = `<span class="hint">${msg}</span>`;
+                playGlitchBurst();
+                setTimeout(() => {
+                    corruptBlock.innerText = generateCorruptText();
+                }, 800);
+            } else {
+                corruptBlock.innerText = generateCorruptText();
+            }
+        }, 2500);
+    }
+});
+
+function startFlashWarnings() {
+    setTimeout(() => {
+        flashSuddenMessage();
+        setInterval(flashSuddenMessage, Math.random() * 40000 + 20000);
+    }, Math.random() * 15000 + 15000);
+}
+
+function closeSite() {
+    try {
+        window.open('', '_self', '').close();
+        window.close();
+    } catch (e) {
+        alert("Вы не можете уйти. Он уже знает, что вы были здесь.");
+    }
+}
+</script>
+
+</body>
+</html>
+
